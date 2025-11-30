@@ -1,0 +1,319 @@
+.settings-page {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary, #1a1a1c);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 500;
+}
+
+.settings-page-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  background: var(--bg-secondary, #222224);
+}
+
+.settings-page-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary, #fff);
+}
+
+.settings-page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+  width: 100%;
+}
+
+.settings-page-section {
+  margin-bottom: 32px;
+  background: var(--bg-secondary, rgba(255, 255, 255, 0.03));
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+}
+
+.settings-page-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-page-section h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}
+
+.settings-page-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+}
+
+.settings-page-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settings-page-item:first-of-type {
+  padding-top: 0;
+}
+
+.settings-page-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-page-item-info label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary, #fff);
+  margin-bottom: 4px;
+}
+
+.settings-page-item-info span {
+  font-size: 12px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.4));
+}
+
+.settings-page-item select {
+  padding: 10px 14px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  color: var(--text-primary, #fff);
+  font-size: 13px;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.settings-page-item select:focus {
+  border-color: var(--accent, #6366f1);
+  outline: none;
+}
+
+.settings-page-item input[type="color"] {
+  width: 48px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.settings-page-item input[type="range"] {
+  width: 150px;
+  accent-color: var(--accent, #6366f1);
+}
+
+.settings-text-input {
+  padding: 10px 14px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  color: var(--text-primary, #fff);
+  font-size: 13px;
+  min-width: 250px;
+}
+
+.settings-text-input:focus {
+  border-color: var(--accent, #6366f1);
+  outline: none;
+}
+
+.settings-text-input::placeholder {
+  color: var(--text-secondary, rgba(255, 255, 255, 0.3));
+}
+
+.settings-toggle {
+  width: 44px;
+  height: 24px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.settings-toggle.active {
+  background: var(--accent, #6366f1);
+}
+
+.settings-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.settings-toggle.active .settings-toggle-knob {
+  left: 22px;
+}
+
+.settings-page-item.wallpaper-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.wallpaper-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.wallpaper-preset-btn {
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallpaper-preset-btn:hover {
+  transform: scale(1.03);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.wallpaper-preset-btn.active {
+  border-color: var(--accent, #6366f1);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+.settings-page-item.toggle-item {
+  align-items: flex-start;
+}
+
+.settings-page-item.toggle-item .settings-toggle {
+  margin-top: 4px;
+}
+
+.settings-page-item.search-engine-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.search-engine-selector {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.search-engine-selector::-webkit-scrollbar {
+  height: 6px;
+}
+
+.search-engine-selector::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-engine-selector::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.search-engine-selector::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.search-engine-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.06));
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.search-engine-option:hover {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.1));
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.search-engine-option.active {
+  background: var(--bg-tertiary, rgba(99, 102, 241, 0.15));
+  border-color: var(--accent, #6366f1);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.search-engine-option svg {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.search-engine-option span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, #fff);
+  white-space: nowrap;
+}
+
+/* Info box for Google auth explanation */
+.settings-info-box {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.settings-info-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.settings-info-content {
+  flex: 1;
+}
+
+.settings-info-content strong {
+  display: block;
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.settings-info-content p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  line-height: 1.5;
+}

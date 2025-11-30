@@ -1,0 +1,32 @@
+{
+  "name": "xolo-browser",
+  "version": "1.0.0",
+  "description": "Modern web browser built with Tauri, React and TypeScript",
+  "scripts": {
+    "dev": "tauri dev",
+    "dev:renderer": "vite",
+    "build": "tauri build",
+    "build:renderer": "vite build",
+    "build:appimage": "tauri build --bundles appimage",
+    "tauri": "tauri",
+    "setup-cef": "bash setup-cef.sh",
+    "prebuild": "npm run setup-cef"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-shell": "^2.3.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.39",
+    "@types/react-dom": "^18.2.17",
+    "@types/uuid": "^9.0.6",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.3.2",
+    "vite": "^5.0.4"
+  }
+}

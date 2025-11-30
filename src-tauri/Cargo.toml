@@ -1,0 +1,40 @@
+[package]
+name = "xolo-browser"
+version = "1.0.0"
+description = "Modern web browser built with Tauri, React and TypeScript"
+authors = ["XOLO Team"]
+license = ""
+repository = ""
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+cc = "1.0"
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2.0"
+tauri-plugin-dialog = "2.0"
+tauri-plugin-opener = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+dirs = "5.0"
+tiny_http = "0.12"
+urlencoding = "2.1"
+lazy_static = "1.4"
+chrono = "0.4"
+rand = "0.8"
+libc = "0.2"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "z"
+strip = false
