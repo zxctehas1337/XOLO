@@ -7,6 +7,8 @@ const WALLPAPERS = [
   'walpaper4.jpg',
   'walpaper5.jpg',
   'walpaper6.jpg',
+  'walpaper7.jpg',
+  'walpaper8.jpg',
 ];
 
 const CHANGE_INTERVAL = 10 * 60 * 1000; // 10 минут в миллисекундах

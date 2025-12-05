@@ -10,6 +10,30 @@
   background-attachment: fixed;
   overflow: hidden;
   position: relative;
+  
+  /* Dynamic border radius based on settings */
+  --radius-none: 0px;
+  --radius-small: 6px;
+  --radius-medium: 12px;
+  --radius-large: 18px;
+}
+
+/* Border radius variants */
+.app[data-radius="none"] { --radius: var(--radius-none); --radius-sm: 0px; }
+.app[data-radius="small"] { --radius: var(--radius-small); --radius-sm: 4px; }
+.app[data-radius="medium"] { --radius: var(--radius-medium); --radius-sm: 8px; }
+.app[data-radius="large"] { --radius: var(--radius-large); --radius-sm: 12px; }
+
+/* Font family variants */
+.app[data-font="system"] { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.app[data-font="inter"] { font-family: 'Inter', -apple-system, sans-serif; }
+.app[data-font="roboto"] { font-family: 'Roboto', -apple-system, sans-serif; }
+.app[data-font="jetbrains"] { font-family: 'JetBrains Mono', monospace; }
+
+/* Animations disabled */
+.app[data-animations="false"] * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
 }
 
 /* Блокируем скролл когда открыта модаль или сайдбар */
@@ -21,7 +45,9 @@
   content: '';
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, var(--wallpaper-dim, 20%));
+  backdrop-filter: blur(var(--wallpaper-blur, 0px));
+  -webkit-backdrop-filter: blur(var(--wallpaper-blur, 0px));
   pointer-events: none;
   z-index: 0;
 }
@@ -43,6 +69,15 @@
   padding: 8px;
   gap: 8px;
   min-height: 0;
+}
+
+/* Main area order based on sidebar position */
+.app[data-sidebar-position="left"] .main-area {
+  order: 1;
+}
+
+.app[data-sidebar-position="right"] .main-area {
+  order: 0;
 }
 
 .main-area {
@@ -87,6 +122,9 @@
   inset: 0;
   display: none;
   flex-direction: column;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
 }
 
 .webview-wrapper.active {
@@ -97,6 +135,13 @@
 
 .webview-wrapper.hidden {
   display: none;
+}
+
+/* Скрываем webview-wrapper когда открыто модальное окно, чтобы ошибки не были видны под блюром */
+.app.modal-open .webview-wrapper {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* Fullscreen mode */
@@ -256,4 +301,106 @@
   .app.app--compact .zen-sidebar {
     width: 50px;
   }
+}
+
+
+/* Light theme support */
+.app[data-theme="light"] {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: rgba(0, 0, 0, 0.05);
+  --text-primary: #1d1d1f;
+  --text-secondary: rgba(0, 0, 0, 0.6);
+  --border: rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+}
+
+.app[data-theme="light"] .zen-sidebar {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.app[data-theme="light"] .zen-sidebar__tab-title,
+.app[data-theme="light"] .zen-sidebar__workspace-name {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.app[data-theme="light"] .zen-sidebar__tab.is-active .zen-sidebar__tab-title {
+  color: #1d1d1f;
+}
+
+.app[data-theme="light"] .zen-sidebar__search {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.app[data-theme="light"] .zen-sidebar__search-input {
+  color: #1d1d1f;
+}
+
+.app[data-theme="light"] .zen-sidebar__search-input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.app[data-theme="light"] .main-area {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.app[data-theme="light"] .settings-page {
+  background: #f5f5f7;
+}
+
+.app[data-theme="light"] .settings-page-header {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.app[data-theme="light"] .settings-page-header h1 {
+  color: #1d1d1f;
+}
+
+.app[data-theme="light"] .settings-nav {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.app[data-theme="light"] .settings-nav-item {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.app[data-theme="light"] .settings-nav-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.app[data-theme="light"] .settings-page-section {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.app[data-theme="light"] .settings-page-section h2 {
+  color: rgba(0, 0, 0, 0.5);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.app[data-theme="light"] .settings-page-item {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.app[data-theme="light"] .settings-page-item-info label {
+  color: #1d1d1f;
+}
+
+.app[data-theme="light"] .settings-page-item-info span {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.app[data-theme="light"] .settings-page-item select {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1d1d1f;
+}
+
+.app[data-theme="light"] .settings-toggle {
+  background: rgba(0, 0, 0, 0.1);
 }

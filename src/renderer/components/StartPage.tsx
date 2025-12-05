@@ -6,7 +6,35 @@ interface StartPageProps {
   settings: Settings;
   onNavigate: (url: string) => void;
   recentSites?: Array<{ url: string; title: string; favicon?: string }>;
+  hiddenSites?: string[]; // URLs скрытых сайтов
+  renamedSites?: Record<string, string>; // URL -> новое имя
+  onHideSite?: (url: string) => void;
+  onDeleteSite?: (url: string) => void;
+  onRenameSite?: (url: string, newName: string) => void;
 }
+
+// Хук для часов
+const useClock = (format: '12h' | '24h') => {
+  const [time, setTime] = useState(new Date());
+  
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  
+  const formatTime = () => {
+    if (format === '12h') {
+      return time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+    return time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  };
+  
+  const formatDate = () => {
+    return time.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+  };
+  
+  return { time: formatTime(), date: formatDate() };
+};
 
 interface WeatherData {
   temp: number;
@@ -23,10 +51,23 @@ const defaultSites = [
   { name: 'StackOverFlow', url: 'https://stackoverflow.com', icon: 'https://stackoverflow.com/favicon.ico' }
 ];
 
-const StartPage: React.FC<StartPageProps> = ({ settings, onNavigate, recentSites = [] }) => {
+const StartPage: React.FC<StartPageProps> = ({ 
+  settings, 
+  onNavigate, 
+  recentSites = [],
+  hiddenSites = [],
+  renamedSites = {},
+  onHideSite,
+  onDeleteSite,
+  onRenameSite,
+}) => {
   const [searchValue, setSearchValue] = useState('');
   const [weather, setWeather] = useState<WeatherData | null>(null);
-
+  const [activeMenu, setActiveMenu] = useState<number | null>(null);
+  const [renameIndex, setRenameIndex] = useState<number | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  
+  const clock = useClock(settings.clockFormat || '24h');
   useEffect(() => {
     let mounted = true;
     
@@ -120,13 +161,75 @@ const StartPage: React.FC<StartPageProps> = ({ settings, onNavigate, recentSites
     }
   };
 
-  const displaySites = recentSites.length > 0 
-    ? recentSites.slice(0, 8).map(s => ({ 
-        name: s.title || new URL(s.url).hostname, 
-        url: s.url, 
-        icon: s.favicon || getFaviconUrl(s.url)
-      }))
-    : defaultSites;
+  // Фильтруем скрытые сайты и применяем переименования
+  const filteredSites = recentSites.length > 0 
+    ? recentSites
+        .filter(s => !hiddenSites.includes(s.url))
+        .slice(0, 8)
+        .map(s => ({ 
+          name: renamedSites[s.url] || s.title || new URL(s.url).hostname, 
+          url: s.url, 
+          icon: s.favicon || getFaviconUrl(s.url)
+        }))
+    : defaultSites.filter(s => !hiddenSites.includes(s.url));
+  
+  const displaySites = filteredSites;
+
+  const handleMenuClick = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    setActiveMenu(activeMenu === index ? null : index);
+  };
+
+  const handleDelete = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    const site = displaySites[index];
+    if (site && onDeleteSite) {
+      onDeleteSite(site.url);
+    }
+    setActiveMenu(null);
+  };
+
+  const handleRename = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    const site = displaySites[index];
+    if (site) {
+      setRenameIndex(index);
+      setRenameValue(site.name);
+    }
+    setActiveMenu(null);
+  };
+
+  const handleRenameSubmit = (index: number) => {
+    const site = displaySites[index];
+    if (site && onRenameSite && renameValue.trim()) {
+      onRenameSite(site.url, renameValue.trim());
+    }
+    setRenameIndex(null);
+    setRenameValue('');
+  };
+
+  const handleRenameCancel = () => {
+    setRenameIndex(null);
+    setRenameValue('');
+  };
+
+  const handleHide = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    const site = displaySites[index];
+    if (site && onHideSite) {
+      onHideSite(site.url);
+    }
+    setActiveMenu(null);
+  };
+
+  // Закрыть меню при клике вне его
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenu(null);
+    if (activeMenu !== null) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [activeMenu]);
 
   return (
     <div 
@@ -138,8 +241,22 @@ const StartPage: React.FC<StartPageProps> = ({ settings, onNavigate, recentSites
         backgroundRepeat: 'no-repeat',
       }}
     >
+      <div className="start-page-overlay" style={{
+        background: `rgba(0, 0, 0, ${(settings.wallpaperDim || 20) / 100})`,
+        backdropFilter: `blur(${settings.wallpaperBlur || 0}px)`,
+      }} />
+      
       <div className="search-container">
-        {weather && (
+        {/* Часы */}
+        {settings.showClock && (
+          <div className="clock-widget">
+            <div className="clock-time">{clock.time}</div>
+            <div className="clock-date">{clock.date}</div>
+          </div>
+        )}
+        
+        {/* Погода */}
+        {settings.showWeather && weather && (
           <div className="weather-widget">
             <div className="weather-icon">{weather.icon}</div>
             <div className="weather-info">
@@ -150,27 +267,30 @@ const StartPage: React.FC<StartPageProps> = ({ settings, onNavigate, recentSites
           </div>
         )}
         
-        <div className="search-box">
-          <div className="search-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="M21 21l-4.35-4.35"/>
-            </svg>
+        {/* Поиск */}
+        {settings.showSearchOnStartPage && (
+          <div className="search-box">
+            <div className="search-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </div>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Поиск или введите URL..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={handleSearch}
+              autoFocus
+            />
           </div>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Поиск или введите URL..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyDown={handleSearch}
-            autoFocus
-          />
-        </div>
+        )}
       </div>
 
-      {displaySites.length > 0 && (
-        <div className="recent-sites">
+      {settings.showQuickSitesOnStartPage && displaySites.length > 0 && (
+        <div className={`recent-sites recent-sites--${settings.quickSitesLayout || 'grid'}`}>
           <div className="recent-sites-grid">
             {displaySites.map((site, index) => (
               <div
@@ -178,12 +298,66 @@ const StartPage: React.FC<StartPageProps> = ({ settings, onNavigate, recentSites
                 className="recent-site-item"
                 onClick={() => onNavigate(site.url)}
               >
+                <button
+                  className="recent-site-menu-btn"
+                  onClick={(e) => handleMenuClick(e, index)}
+                  aria-label="Меню"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="5" r="2"/>
+                    <circle cx="12" cy="12" r="2"/>
+                    <circle cx="12" cy="19" r="2"/>
+                  </svg>
+                </button>
+                
+                {activeMenu === index && (
+                  <div className="recent-site-menu">
+                    <button onClick={(e) => handleRename(e, index)}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                      Переименовать
+                    </button>
+                    <button onClick={(e) => handleHide(e, index)}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                      Скрыть
+                    </button>
+                    <button onClick={(e) => handleDelete(e, index)} className="danger">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                      Удалить
+                    </button>
+                  </div>
+                )}
+
                 <div className="recent-site-icon">
                   {site.icon && <img src={site.icon} alt={site.name} onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }} />}
                 </div>
-                <div className="recent-site-name">{site.name}</div>
+                {renameIndex === index ? (
+                  <input
+                    type="text"
+                    className="recent-site-rename-input"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRenameSubmit(index);
+                      if (e.key === 'Escape') handleRenameCancel();
+                    }}
+                    onBlur={() => handleRenameSubmit(index)}
+                    onClick={(e) => e.stopPropagation()}
+                    autoFocus
+                  />
+                ) : (
+                  <div className="recent-site-name">{site.name}</div>
+                )}
               </div>
             ))}
           </div>

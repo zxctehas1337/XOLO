@@ -1,9 +1,8 @@
-// Tauri API wrapper - заменяет Electron API
+// Tauri API wrapper для Windows WebView2
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { open as shellOpen } from '@tauri-apps/plugin-shell';
 
-// Создаем совместимый API с Electron
 export const electronAPI = {
   // Window controls
   minimize: () => invoke('window_minimize'),
@@ -35,9 +34,7 @@ export const electronAPI = {
     const unlisten = listen('shortcut', (event: any) => {
       callback(event.payload);
     });
-    return () => {
-      unlisten.then(fn => fn());
-    };
+    return () => { unlisten.then(fn => fn()); };
   },
 
   // Fullscreen change listener
@@ -45,19 +42,15 @@ export const electronAPI = {
     const unlisten = listen('fullscreen-change', (event: any) => {
       callback(event.payload);
     });
-    return () => {
-      unlisten.then(fn => fn());
-    };
+    return () => { unlisten.then(fn => fn()); };
   },
 
-  // Open URL in new tab (from main process)
+  // Open URL in new tab
   onOpenUrl: (callback: (url: string) => void) => {
     const unlisten = listen('open-url', (event: any) => {
       callback(event.payload);
     });
-    return () => {
-      unlisten.then(fn => fn());
-    };
+    return () => { unlisten.then(fn => fn()); };
   },
 
   // Import/Export bookmarks
@@ -75,9 +68,7 @@ export const electronAPI = {
     const unlisten = listen('download-update', (event: any) => {
       callback(event.payload);
     });
-    return () => {
-      unlisten.then(fn => fn());
-    };
+    return () => { unlisten.then(fn => fn()); };
   },
   cancelDownload: (id: string) => invoke('cancel_download', { id }),
   openDownload: (path: string) => invoke('open_download', { path }),
@@ -94,17 +85,13 @@ export const electronAPI = {
     const unlisten = listen('update-available', (event: any) => {
       callback(event.payload);
     });
-    return () => {
-      unlisten.then(fn => fn());
-    };
+    return () => { unlisten.then(fn => fn()); };
   },
   onUpdateDownloaded: (callback: () => void) => {
     const unlisten = listen('update-downloaded', () => {
       callback();
     });
-    return () => {
-      unlisten.then(fn => fn());
-    };
+    return () => { unlisten.then(fn => fn()); };
   },
   installUpdate: () => invoke('install_update'),
 
@@ -113,24 +100,38 @@ export const electronAPI = {
   restoreSession: () => invoke('restore_session'),
   clearSession: () => invoke('clear_session'),
 
-  // Partition sessions (не используется в Tauri, но оставляем для совместимости)
-  getPartitionSession: (partition: string) => Promise.resolve(true),
+  // WebView2 commands
+  createWebView: (id: string, url: string) => invoke('create_webview', { id, url }),
+  closeWebView: (id: string) => invoke('close_webview', { id }),
+  navigateWebView: (id: string, url: string) => invoke('navigate_webview', { id, url }),
+  webViewGoBack: (id: string) => invoke('go_back', { id }),
+  webViewGoForward: (id: string) => invoke('go_forward', { id }),
+  webViewReload: (id: string) => invoke('reload_webview', { id }),
+  webViewStop: (id: string) => invoke('stop_webview', { id }),
+  getWebViewInfo: (id: string) => invoke('get_webview_info', { id }),
+  executeScript: (id: string, script: string) => invoke('execute_script', { id, script }),
+  setZoom: (id: string, zoom: number) => invoke('set_zoom', { id, zoom }),
+  getWebViewUrl: (id: string) => invoke('get_webview_url', { id }),
+  getWebViewTitle: (id: string) => invoke<string>('get_webview_title', { id }),
+  webViewExists: (id: string) => invoke<boolean>('webview_exists', { id }),
+  setWebViewVisible: (id: string, visible: boolean) => invoke('set_webview_visible', { id, visible }),
+  updateWebViewBounds: (id: string, bounds: { x: number; y: number; width: number; height: number }) => 
+    invoke('update_webview_bounds', { id, bounds }),
 
-  // Google OAuth
-  googleOAuthLogin: (clientId: string, clientSecret: string) => 
-    invoke('google_oauth_login', { clientId, clientSecret }),
-  googleOAuthRefresh: () => invoke('google_oauth_refresh'),
-  googleOAuthLogout: () => invoke('google_oauth_logout'),
-  googleOAuthGetUser: () => invoke('google_oauth_get_user'),
-  
-  // Google Auth External Browser notification
-  onGoogleAuthExternal: (callback: (data: any) => void) => {
-    const unlisten = listen('google-auth-external', (event: any) => {
+  // WebView URL change listener
+  onWebViewUrlChanged: (callback: (data: { id: string; url?: string; title?: string; is_loading?: boolean }) => void) => {
+    const unlisten = listen('webview-url-changed', (event: any) => {
       callback(event.payload);
     });
-    return () => {
-      unlisten.then(fn => fn());
-    };
+    return () => { unlisten.then(fn => fn()); };
+  },
+
+  // Page info update listener (title, url from injected script)
+  onPageInfoUpdate: (callback: (data: { id: string; title: string; url: string }) => void) => {
+    const unlisten = listen('page-info-update', (event: any) => {
+      callback(event.payload);
+    });
+    return () => { unlisten.then(fn => fn()); };
   },
 };
 

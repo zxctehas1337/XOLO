@@ -65,10 +65,12 @@ interface NewTabModalProps {
 const NewTabModal: React.FC<NewTabModalProps> = ({ recentQueries, onSubmit, onClose }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [input, setInput] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [searchEngine, setSearchEngine] = useState<SearchEngine>('google');
   const [showEngineDropdown, setShowEngineDropdown] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const displayList = input.trim() ? [] : recentQueries;
 
@@ -79,8 +81,7 @@ const NewTabModal: React.FC<NewTabModalProps> = ({ recentQueries, onSubmit, onCl
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        const button = document.querySelector('.new-tab-modal__engine-button');
-        if (button && !button.contains(event.target as Node)) {
+        if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
           setShowEngineDropdown(false);
         }
       }
@@ -91,6 +92,17 @@ const NewTabModal: React.FC<NewTabModalProps> = ({ recentQueries, onSubmit, onCl
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showEngineDropdown]);
+
+  const handleToggleDropdown = () => {
+    if (!showEngineDropdown && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8,
+        left: rect.left,
+      });
+    }
+    setShowEngineDropdown(!showEngineDropdown);
+  };
 
   const handleSubmit = (query?: string) => {
     const value = query ?? input.trim();
@@ -140,8 +152,9 @@ const NewTabModal: React.FC<NewTabModalProps> = ({ recentQueries, onSubmit, onCl
         <div className="new-tab-modal__input-wrapper">
           <div className="new-tab-modal__engine-selector">
             <button
+              ref={buttonRef}
               className="new-tab-modal__engine-button"
-              onClick={() => setShowEngineDropdown(!showEngineDropdown)}
+              onClick={handleToggleDropdown}
               type="button"
             >
               {searchEngines[searchEngine].icon}
@@ -161,6 +174,10 @@ const NewTabModal: React.FC<NewTabModalProps> = ({ recentQueries, onSubmit, onCl
               <div 
                 ref={dropdownRef}
                 className="new-tab-modal__engine-dropdown"
+                style={{
+                  top: dropdownPosition.top,
+                  left: dropdownPosition.left,
+                }}
               >
                 {(Object.keys(searchEngines) as SearchEngine[]).map((key) => (
                   <button

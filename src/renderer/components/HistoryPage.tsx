@@ -1,15 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { HistoryEntry } from '../types';
+import { useTranslation } from '../hooks/useTranslation';
 import './HistoryPage.css';
 
 interface HistoryPageProps {
   history: HistoryEntry[];
   onNavigate: (url: string) => void;
   onClearHistory: () => void;
+  language: 'ru' | 'en';
 }
 
-const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearHistory }) => {
+const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearHistory, language }) => {
   const [searchFilter, setSearchFilter] = useState('');
+  const t = useTranslation(language);
 
   const filteredHistory = useMemo(() => 
     history.filter(h =>
@@ -29,11 +32,15 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearH
       
       let key: string;
       if (date.toDateString() === today.toDateString()) {
-        key = 'Сегодня';
+        key = t.common.today;
       } else if (date.toDateString() === yesterday.toDateString()) {
-        key = 'Вчера';
+        key = t.common.yesterday;
       } else {
-        key = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+        key = date.toLocaleDateString(language === 'ru' ? 'ru-RU' : 'en-US', { 
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric' 
+        });
       }
       
       if (!groups[key]) groups[key] = [];
@@ -41,10 +48,13 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearH
     });
     
     return groups;
-  }, [filteredHistory]);
+  }, [filteredHistory, language, t.common.today, t.common.yesterday]);
 
   const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    return new Date(timestamp).toLocaleTimeString(language === 'ru' ? 'ru-RU' : 'en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   };
 
   const getFaviconUrl = (url: string) => {
@@ -59,7 +69,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearH
   return (
     <div className="history-page">
       <div className="history-page-header">
-        <h1>История</h1>
+        <h1>{t.common.history}</h1>
         <div className="history-page-actions">
           <div className="history-search-box">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -68,7 +78,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearH
             </svg>
             <input
               type="text"
-              placeholder="Поиск в истории..."
+              placeholder={t.common.searchPlaceholder}
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
             />
@@ -79,7 +89,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearH
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
               </svg>
-              Очистить историю
+              {t.common.clearHistory}
             </button>
           )}
         </div>
@@ -92,7 +102,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearH
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>
             </svg>
-            <p>История пуста</p>
+            <p>{t.common.historyEmpty}</p>
           </div>
         ) : (
           Object.entries(groupedHistory).map(([date, entries]) => (
@@ -105,7 +115,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ history, onNavigate, onClearH
                       <img src={getFaviconUrl(entry.url)} alt="" />
                     </div>
                     <div className="history-item-info">
-                      <div className="history-item-title">{entry.title || 'Без названия'}</div>
+                      <div className="history-item-title">{entry.title || t.common.noTitle}</div>
                       <div className="history-item-url">{entry.url}</div>
                     </div>
                     <div className="history-item-time">{formatTime(entry.visitedAt)}</div>

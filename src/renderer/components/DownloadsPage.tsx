@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import './DownloadsPage.css';
 
 export interface Download {
@@ -12,8 +13,13 @@ export interface Download {
   savePath?: string;
 }
 
-const DownloadsPage: React.FC = () => {
+interface DownloadsPageProps {
+  language: 'ru' | 'en';
+}
+
+const DownloadsPage: React.FC<DownloadsPageProps> = ({ language }) => {
   const [downloads, setDownloads] = useState<Download[]>([]);
+  const t = useTranslation(language);
 
   useEffect(() => {
     const loadDownloads = async () => {
@@ -58,14 +64,14 @@ const DownloadsPage: React.FC = () => {
   return (
     <div className="downloads-page">
       <div className="downloads-page-header">
-        <h1>Загрузки</h1>
+        <h1>{t.common.downloads}</h1>
         <div className="downloads-page-actions">
           <button className="downloads-clear-btn" onClick={clearCompleted}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             </svg>
-            Очистить завершенные
+            {t.common.clearCompleted}
           </button>
         </div>
       </div>
@@ -78,7 +84,7 @@ const DownloadsPage: React.FC = () => {
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            <p>Нет загрузок</p>
+            <p>{t.common.downloadsEmpty}</p>
           </div>
         ) : (
           <div className="downloads-list">
@@ -102,20 +108,20 @@ const DownloadsPage: React.FC = () => {
                         </>
                       )}
                       {download.state === 'completed' && (
-                        <span className="download-status-completed">✓ Завершено - {formatBytes(download.totalBytes)}</span>
+                        <span className="download-status-completed">✓ {t.common.completed} - {formatBytes(download.totalBytes)}</span>
                       )}
-                      {download.state === 'cancelled' && <span className="download-status-cancelled">Отменено</span>}
-                      {download.state === 'interrupted' && <span className="download-status-interrupted">Прервано</span>}
+                      {download.state === 'cancelled' && <span className="download-status-cancelled">{t.common.cancelled}</span>}
+                      {download.state === 'interrupted' && <span className="download-status-interrupted">{t.common.interrupted}</span>}
                     </div>
                   </div>
                   <div className="download-page-controls">
                     {download.state === 'progressing' && (
-                      <button onClick={() => cancelDownload(download.id)} title="Отменить">⏸</button>
+                      <button onClick={() => cancelDownload(download.id)} title={t.common.cancel}>⏸</button>
                     )}
                     {download.state === 'completed' && download.savePath && (
                       <>
-                        <button onClick={() => openDownload(download.savePath!)} title="Открыть">📂</button>
-                        <button onClick={() => showInFolder(download.savePath!)} title="Показать в папке">📁</button>
+                        <button onClick={() => openDownload(download.savePath!)} title={t.common.open}>📂</button>
+                        <button onClick={() => showInFolder(download.savePath!)} title={t.common.showInFolder}>📁</button>
                       </>
                     )}
                   </div>

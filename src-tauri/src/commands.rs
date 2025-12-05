@@ -1,5 +1,5 @@
 use tauri::Window;
-use crate::{AppState, storage, oauth, downloads};
+use crate::{AppState, storage, downloads};
 
 // Window commands
 #[tauri::command]
@@ -200,7 +200,7 @@ pub async fn open_download(app: tauri::AppHandle, path: String) -> Result<(), St
 }
 
 #[tauri::command]
-pub async fn show_download_in_folder(app: tauri::AppHandle, path: String) -> Result<(), String> {
+pub async fn show_download_in_folder(_app: tauri::AppHandle, path: String) -> Result<(), String> {
     
     #[cfg(target_os = "windows")]
     {
@@ -222,7 +222,7 @@ pub async fn show_download_in_folder(app: tauri::AppHandle, path: String) -> Res
     {
         use tauri_plugin_opener::OpenerExt;
         if let Some(parent) = std::path::Path::new(&path).parent() {
-            app.opener()
+            _app.opener()
                 .open_url(parent.to_string_lossy().as_ref(), None::<&str>)
                 .map_err(|e| e.to_string())?;
         }
@@ -258,23 +258,3 @@ pub async fn clear_session() -> Result<bool, String> {
     storage::clear_session().await
 }
 
-// Google OAuth commands
-#[tauri::command]
-pub async fn google_oauth_login(client_id: String, client_secret: String) -> Result<oauth::OAuthResult, String> {
-    oauth::google_oauth_login(client_id, client_secret).await
-}
-
-#[tauri::command]
-pub async fn google_oauth_refresh() -> Result<oauth::OAuthRefreshResult, String> {
-    oauth::google_oauth_refresh().await
-}
-
-#[tauri::command]
-pub async fn google_oauth_logout() -> Result<oauth::LogoutResult, String> {
-    oauth::google_oauth_logout().await
-}
-
-#[tauri::command]
-pub async fn google_oauth_get_user() -> Result<Option<oauth::UserData>, String> {
-    oauth::google_oauth_get_user().await
-}

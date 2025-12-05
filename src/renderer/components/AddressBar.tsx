@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
-import './AddressBar.css';
+import '../styles/components/address-bar.css';
 
 // Словарь популярных сокращений
 const SHORTCUTS: Record<string, { url: string; title: string }> = {
@@ -204,13 +204,14 @@ const AddressBar: React.FC<AddressBarProps> = ({
             </svg>
           )}
         </button>
-        <button className="nav-btn" onClick={onHome} title="Домой">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </button>
       </div>
+
+      <button className="home-btn" onClick={onHome} title="Домой">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </button>
 
       <div className="address-input-container">
         <div className={`security-icon ${isSecure ? 'secure' : url ? 'insecure' : ''}`} title={isSecure ? 'Безопасное соединение (HTTPS)' : url ? 'Небезопасное соединение' : ''}>

@@ -14,6 +14,8 @@ export interface Tab {
   lastActiveAt?: number; // Время последней активности
 }
 
+export type Language = 'ru' | 'en';
+
 export interface TabError {
   code: number;
   description: string;
@@ -45,19 +47,66 @@ export interface HistoryEntry {
 }
 
 export interface Settings {
-  searchEngine: 'google' | 'duckduckgo' | 'bing';
+  // Поиск
+  searchEngine: 'google' | 'duckduckgo' | 'bing' | 'yandex';
+  
+  // Внешний вид
   theme: 'dark' | 'light' | 'custom';
   accentColor: string;
   fontSize: number;
+  fontFamily: 'system' | 'inter' | 'roboto' | 'jetbrains';
+  borderRadius: 'none' | 'small' | 'medium' | 'large';
+  
+  // Сайдбар
+  sidebarPosition: 'left' | 'right';
+  sidebarStyle: 'default' | 'compact' | 'minimal';
+  sidebarAutoHide: boolean;
+  showSidebarQuickSites: boolean;
+  showSidebarWorkspaces: boolean;
+  showSidebarNavigation: boolean;
+  
+  // Вкладки
   tabPosition: 'top' | 'bottom' | 'left' | 'right';
-  showBookmarksBar: boolean;
-  adBlockEnabled: boolean;
-  readerModeEnabled: boolean;
+  tabStyle: 'default' | 'compact' | 'pills';
+  showTabPreviews: boolean;
+  showTabFavicons: boolean;
+  tabCloseButton: 'hover' | 'always' | 'never';
+  
+  // Стартовая страница
   startPageBackground: string;
+  wallpaperUrl: string;
+  wallpaperBlur: number;
+  wallpaperDim: number;
   showWeather: boolean;
   showQuotes: boolean;
   showTodos: boolean;
-  wallpaperUrl: string; // URL фонового изображения
+  showClock: boolean;
+  clockFormat: '12h' | '24h';
+  showSearchOnStartPage: boolean;
+  showQuickSitesOnStartPage: boolean;
+  quickSitesLayout: 'grid' | 'list' | 'compact';
+  
+  // Приватность и безопасность
+  adBlockEnabled: boolean;
+  trackingProtection: boolean;
+  httpsOnly: boolean;
+  clearDataOnExit: boolean;
+  
+  // Производительность
+  hardwareAcceleration: boolean;
+  tabSuspension: boolean;
+  tabSuspensionTimeout: number;
+  preloadPages: boolean;
+  
+  // Дополнительно
+  showBookmarksBar: boolean;
+  readerModeEnabled: boolean;
+  smoothScrolling: boolean;
+  animationsEnabled: boolean;
+  soundEnabled: boolean;
+  notificationsEnabled: boolean;
+  downloadPath: string;
+  language: 'ru' | 'en';
 }
 
 export interface QuickAccess {
@@ -68,19 +117,66 @@ export interface QuickAccess {
 }
 
 export const defaultSettings: Settings = {
+  // Поиск
   searchEngine: 'google',
+  
+  // Внешний вид
   theme: 'dark',
   accentColor: '#7c3aed',
   fontSize: 14,
+  fontFamily: 'system',
+  borderRadius: 'medium',
+  
+  // Сайдбар
+  sidebarPosition: 'right',
+  sidebarStyle: 'default',
+  sidebarAutoHide: false,
+  showSidebarQuickSites: true,
+  showSidebarWorkspaces: true,
+  showSidebarNavigation: true,
+  
+  // Вкладки
   tabPosition: 'top',
-  showBookmarksBar: true,
-  adBlockEnabled: true,
-  readerModeEnabled: false,
+  tabStyle: 'default',
+  showTabPreviews: false,
+  showTabFavicons: true,
+  tabCloseButton: 'hover',
+  
+  // Стартовая страница
   startPageBackground: 'gradient',
+  wallpaperUrl: '/walpaper1.jpg',
+  wallpaperBlur: 0,
+  wallpaperDim: 20,
   showWeather: true,
   showQuotes: false,
   showTodos: false,
-  wallpaperUrl: '/walpaper1.jpg',
+  showClock: true,
+  clockFormat: '24h',
+  showSearchOnStartPage: true,
+  showQuickSitesOnStartPage: true,
+  quickSitesLayout: 'grid',
+  
+  // Приватность и безопасность
+  adBlockEnabled: true,
+  trackingProtection: true,
+  httpsOnly: false,
+  clearDataOnExit: false,
+  
+  // Производительность
+  hardwareAcceleration: true,
+  tabSuspension: true,
+  tabSuspensionTimeout: 30,
+  preloadPages: false,
+  
+  // Дополнительно
+  showBookmarksBar: true,
+  readerModeEnabled: false,
+  smoothScrolling: true,
+  animationsEnabled: true,
+  soundEnabled: true,
+  notificationsEnabled: true,
+  downloadPath: '',
+  language: 'ru',
 };
 
 export interface Download {
@@ -141,12 +237,17 @@ declare global {
       clearSession: () => Promise<boolean>;
       // Partition sessions
       getPartitionSession: (partition: string) => Promise<boolean>;
-      // Google OAuth
-      googleOAuthLogin: (clientId: string, clientSecret: string) => Promise<GoogleOAuthResult>;
-      googleOAuthRefresh: () => Promise<GoogleOAuthRefreshResult>;
-      googleOAuthLogout: () => Promise<{ success: boolean }>;
-      googleOAuthGetUser: () => Promise<GoogleOAuthUserData | null>;
-      onGoogleAuthExternal: (callback: (data: { message: string; url: string }) => void) => () => void;
+      // WebView2 commands
+      webViewGoBack: (id: string) => Promise<boolean>;
+      webViewGoForward: (id: string) => Promise<boolean>;
+      webViewReload: (id: string) => Promise<void>;
+      webViewStop: (id: string) => Promise<void>;
+      getWebViewUrl: (id: string) => Promise<string>;
+      closeWebView: (id: string) => Promise<void>;
+      setWebViewVisible: (id: string, visible: boolean) => Promise<void>;
+      updateWebViewBounds: (id: string, bounds: { x: number; y: number; width: number; height: number }) => Promise<void>;
+      onWebViewUrlChanged: (callback: (data: { id: string; url?: string; title?: string; is_loading?: boolean }) => void) => () => void;
+      onPageInfoUpdate: (callback: (data: { id: string; title: string; url: string }) => void) => () => void;
     };
     electron?: {
       ipcRenderer: {
@@ -154,37 +255,4 @@ declare global {
       };
     };
   }
-}
-
-export interface GoogleUser {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
-  verified_email?: boolean;
-}
-
-export interface GoogleTokens {
-  access_token: string;
-  refresh_token?: string;
-  expires_in?: number;
-  token_type?: string;
-}
-
-export interface GoogleOAuthResult {
-  success: boolean;
-  userInfo?: GoogleUser;
-  tokens?: GoogleTokens;
-  error?: string;
-}
-
-export interface GoogleOAuthRefreshResult {
-  success: boolean;
-  tokens?: GoogleTokens;
-  error?: string;
-}
-
-export interface GoogleOAuthUserData {
-  userInfo: GoogleUser;
-  tokens: GoogleTokens;
 }

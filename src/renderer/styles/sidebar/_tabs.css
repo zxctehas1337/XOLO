@@ -1,0 +1,175 @@
+/* ==============================================
+   ZenSidebar - Tabs List
+   ============================================== */
+
+.zen-sidebar__tabs {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 0;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.zen-sidebar__tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.zen-sidebar__tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.zen-sidebar__tab.is-active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.zen-sidebar__tab.is-active::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  background: linear-gradient(180deg, #7c3aed 0%, #9333ea 100%);
+  border-radius: 3px 0 0 3px;
+}
+
+.zen-sidebar__tab.is-frozen {
+  opacity: 0.5;
+}
+
+.zen-sidebar__tab.is-frozen .zen-sidebar__tab-icon::after {
+  content: '❄️';
+  position: absolute;
+  font-size: 8px;
+  bottom: -2px;
+  right: -2px;
+}
+
+.zen-sidebar__tab-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.zen-sidebar__tab-icon img {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.zen-sidebar__tab-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: zen-spin 0.8s linear infinite;
+}
+
+.zen-sidebar__tab-title {
+  flex: 1;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zen-sidebar__tab.is-active .zen-sidebar__tab-title {
+  color: white;
+}
+
+.zen-sidebar__tab-close {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 0;
+  transition: all 0.15s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.zen-sidebar__tab:hover .zen-sidebar__tab-close {
+  opacity: 1;
+}
+
+.zen-sidebar__tab-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Tab close button always visible */
+.zen-sidebar__tab-close.always-visible {
+  opacity: 1;
+}
+
+/* Internal pages styling */
+.zen-sidebar__tab.is-internal .zen-sidebar__tab-icon {
+  color: var(--accent, #6366f1);
+}
+
+.zen-sidebar__tab.is-internal.is-active .zen-sidebar__tab-icon {
+  color: var(--accent, #6366f1);
+}
+
+/* New tab button */
+.zen-sidebar__new-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.zen-sidebar__new-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Active tab indicator position */
+.zen-sidebar--left .zen-sidebar__tab.is-active::before {
+  left: 0;
+  right: auto;
+  border-radius: 0 3px 3px 0;
+}
+
+.zen-sidebar--right .zen-sidebar__tab.is-active::before {
+  right: 0;
+  left: auto;
+  border-radius: 3px 0 0 3px;
+}
+
+.zen-sidebar__tab {
+  transition: all 0.2s ease;
+}
