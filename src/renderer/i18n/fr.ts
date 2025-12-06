@@ -135,6 +135,8 @@ export const fr: Translations = {
     aboutBrowser: 'À propos du navigateur',
     version: 'Version',
     copyright: '© 2025 Équipe Axion',
+    showWelcomeOnNextLaunch: 'Afficher l\'accueil',
+    showWelcomeOnNextLaunchDesc: 'Afficher la page d\'accueil au prochain lancement du navigateur',
   },
   quickSitesPage: {
     title: 'Sites rapides',

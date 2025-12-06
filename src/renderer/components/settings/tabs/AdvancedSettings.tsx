@@ -39,6 +39,10 @@ export const AdvancedSettings: React.FC<SettingsTabProps> = ({ settings, onUpdat
       <SettingItem label={t.settings.notificationsEnabled} description={t.settings.notificationsEnabledDesc}>
         <Toggle checked={settings.notificationsEnabled} onChange={(v) => onUpdate({ notificationsEnabled: v })} />
       </SettingItem>
+
+      <SettingItem label={t.settings.showWelcomeOnNextLaunch} description={t.settings.showWelcomeOnNextLaunchDesc}>
+        <Toggle checked={settings.showWelcomeOnNextLaunch} onChange={(v) => onUpdate({ showWelcomeOnNextLaunch: v })} />
+      </SettingItem>
     </div>
 
     <div className="settings-page-section">
@@ -49,7 +53,7 @@ export const AdvancedSettings: React.FC<SettingsTabProps> = ({ settings, onUpdat
         </div>
         <div className="about-info">
           <h3>Axion Browser</h3>
-          <p>{t.settings.version} 1.0.0</p>
+          <p>{t.settings.version} 1.7.9</p>
           <p className="about-copyright">{t.settings.copyright}</p>
         </div>
       </div>

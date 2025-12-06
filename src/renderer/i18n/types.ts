@@ -136,6 +136,8 @@ export interface Translations {
     aboutBrowser: string;
     version: string;
     copyright: string;
+    showWelcomeOnNextLaunch: string;
+    showWelcomeOnNextLaunchDesc: string;
   };
   // QuickSites page
   quickSitesPage: {

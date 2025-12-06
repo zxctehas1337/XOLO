@@ -1,6 +1,6 @@
 {
   "productName": "Axion",
-  "version": "1.0.0",
+  "version": "1.7.9",
   "identifier": "com.axion.browser",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
@@ -32,7 +32,7 @@
   "bundle": {
     "active": true,
     "category": "Utility",
-    "copyright": "© 2025 Axion Team",
+    "copyright": "© 2025 nihmadev",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

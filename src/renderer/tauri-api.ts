@@ -103,6 +103,11 @@ export const electronAPI = {
   // Browser import
   importFromBrowser: (browser: 'chrome' | 'firefox' | 'edge' | 'zen') => 
     invoke('import_from_browser', { browser }),
+  detectBrowsers: () => invoke('detect_browsers'),
+  
+  // First launch
+  isFirstLaunch: () => invoke<boolean>('is_first_launch'),
+  markInitialized: () => invoke('mark_initialized'),
 
   // Auto-update
   checkForUpdates: () => invoke('check_for_updates'),

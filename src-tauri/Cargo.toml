@@ -1,8 +1,8 @@
 [package]
-name = "axion-browser"
-version = "1.0.0"
-description = "Modern web browser built with Tauri and WebView2 for Windows"
-authors = ["Axion Team"]
+name = "Axion"
+version = "1.7.9"
+description = ""
+authors = ["nihmadev"]
 license = ""
 repository = ""
 edition = "2021"

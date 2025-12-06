@@ -134,7 +134,9 @@ export const de: Translations = {
     notificationsEnabledDesc: 'Systembenachrichtigungen anzeigen',
     aboutBrowser: 'Über den Browser',
     version: 'Version',
-    copyright: '© 2025 Axion Team',
+    copyright: '© 2025 nihmadev',
+    showWelcomeOnNextLaunch: 'Willkommen anzeigen',
+    showWelcomeOnNextLaunchDesc: 'Willkommensseite beim nächsten Browserstart anzeigen',
   },
   quickSitesPage: {
     title: 'Schnellzugriff',

@@ -134,7 +134,9 @@ export const ru: Translations = {
     notificationsEnabledDesc: 'Показывать системные уведомления',
     aboutBrowser: 'О браузере',
     version: 'Версия',
-    copyright: '© 2025 Axion Team',
+    copyright: '© 2025 nihmadev',
+    showWelcomeOnNextLaunch: 'Показать приветствие',
+    showWelcomeOnNextLaunchDesc: 'Показать страницу приветствия при следующем запуске браузера',
   },
   quickSitesPage: {
     title: 'Быстрые сайты',

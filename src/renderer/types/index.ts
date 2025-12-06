@@ -109,6 +109,7 @@ export interface Settings {
   notificationsEnabled: boolean;
   downloadPath: string;
   language: 'ru' | 'en';
+  showWelcomeOnNextLaunch: boolean;
 }
 
 export interface QuickAccess {
@@ -116,6 +117,12 @@ export interface QuickAccess {
   url: string;
   title: string;
   icon?: string;
+}
+
+export interface DetectedBrowser {
+  id: string;
+  name: string;
+  available: boolean;
 }
 
 export const defaultSettings: Settings = {
@@ -179,6 +186,7 @@ export const defaultSettings: Settings = {
   notificationsEnabled: true,
   downloadPath: '',
   language: 'ru',
+  showWelcomeOnNextLaunch: false,
 };
 
 export interface Download {
@@ -227,7 +235,11 @@ declare global {
       showDownloadInFolder: (path: string) => Promise<void>;
       clearCompletedDownloads: () => Promise<void>;
       // Browser import
-      importFromBrowser: (browser: 'chrome' | 'firefox' | 'edge') => Promise<{ bookmarks: Bookmark[], history: HistoryEntry[] } | null>;
+      importFromBrowser: (browser: 'chrome' | 'firefox' | 'edge' | 'zen') => Promise<{ bookmarks: Bookmark[], history: HistoryEntry[] } | null>;
+      detectBrowsers: () => Promise<DetectedBrowser[]>;
+      // First launch
+      isFirstLaunch: () => Promise<boolean>;
+      markInitialized: () => Promise<void>;
       // Auto-update
       checkForUpdates: () => Promise<void>;
       onUpdateAvailable: (callback: (info: any) => void) => () => void;

@@ -220,7 +220,7 @@
 
 /* About browser section */
 .app[data-theme="light"] .about-browser {
-  background: rgba(0, 0, 0, 0.03);
+  background: transparent;
 }
 
 .app[data-theme="light"] .about-logo {

@@ -72,6 +72,9 @@ fn main() {
             commands::get_downloads_folder,
             // Import
             commands::import_from_browser,
+            commands::detect_browsers,
+            commands::is_first_launch,
+            commands::mark_initialized,
             // Session
             commands::save_session,
             commands::restore_session,

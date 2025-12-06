@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Settings, defaultSettings } from './types';
 import { useTranslation } from './hooks/useTranslation';
 import TitleBar from './components/TitleBar/TitleBar';
@@ -7,6 +7,7 @@ import ZenSidebar from './components/ZenSidebar';
 import WebViewArea from './components/WebView/WebViewArea';
 import AppModals from './components/AppModals';
 import UpdateBanner from './components/UpdateBanner';
+import WelcomePage from './components/WelcomePage';
 import { extractSearchQueries } from './utils/url';
 import {
   useWorkspaces,
@@ -35,8 +36,36 @@ const App: React.FC = () => {
   const [updateDownloaded] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(220);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeChecked, setWelcomeChecked] = useState(false);
   
   const t = useTranslation(settings.language);
+  
+  // Проверка первого запуска или настройки showWelcomeOnNextLaunch
+  useEffect(() => {
+    const checkFirstLaunch = async () => {
+      try {
+        const isFirst = await window.electronAPI.isFirstLaunch();
+        const savedSettings = await window.electronAPI.getSettings();
+        const shouldShowWelcome = isFirst || savedSettings?.showWelcomeOnNextLaunch;
+        setShowWelcome(shouldShowWelcome);
+        
+        // Если показываем приветствие из-за настройки, сбрасываем её
+        if (savedSettings?.showWelcomeOnNextLaunch && !isFirst) {
+          const updatedSettings = { ...savedSettings, showWelcomeOnNextLaunch: false };
+          await window.electronAPI.setSettings(updatedSettings);
+          setSettings(updatedSettings);
+        } else if (savedSettings) {
+          setSettings(savedSettings);
+        }
+      } catch (error) {
+        console.error('Failed to check first launch:', error);
+      } finally {
+        setWelcomeChecked(true);
+      }
+    };
+    checkFirstLaunch();
+  }, []);
   
   // Состояния для StartPage сайтов
   const {
@@ -206,6 +235,43 @@ const App: React.FC = () => {
     createNewTab(query);
   }, [createNewTab]);
 
+  // Обработчик импорта для WelcomePage
+  const handleWelcomeImport = useCallback(async (browser: 'chrome' | 'firefox' | 'edge' | 'zen') => {
+    const result = await window.electronAPI.importFromBrowser(browser);
+    if (result) {
+      // Объединяем закладки
+      const mergedBookmarks = [...bookmarks, ...result.bookmarks.filter(
+        (imported: { url: string }) => !bookmarks.some(b => b.url === imported.url)
+      )];
+      setBookmarks(mergedBookmarks);
+      window.electronAPI.setBookmarks(mergedBookmarks);
+      
+      // Объединяем историю
+      const mergedHistory = [...result.history, ...history];
+      setHistory(mergedHistory.slice(0, 500));
+    }
+  }, [bookmarks, history, setBookmarks, setHistory]);
+
+  // Обработчик завершения WelcomePage с выбранным акцентным цветом
+  const handleWelcomeComplete = useCallback((accentColor: string) => {
+    updateSettings({ accentColor });
+    setShowWelcome(false);
+  }, [updateSettings]);
+
+  // Показываем пустой экран пока проверяем первый запуск
+  if (!welcomeChecked) {
+    return <div className="app" style={{ background: '#000' }} />;
+  }
+
+  // Показываем WelcomePage при первом запуске
+  if (showWelcome) {
+    return (
+      <WelcomePage
+        onComplete={handleWelcomeComplete}
+        onImport={handleWelcomeImport}
+      />
+    );
+  }
 
   return (
     <div 

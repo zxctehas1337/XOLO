@@ -8,6 +8,115 @@ pub struct ImportResult {
     pub history: Vec<HistoryEntry>,
 }
 
+#[derive(Serialize, Clone)]
+pub struct DetectedBrowser {
+    pub id: String,
+    pub name: String,
+    pub available: bool,
+}
+
+/// Detects which browsers are installed on the system
+pub async fn detect_browsers() -> Result<Vec<DetectedBrowser>, String> {
+    let home_dir = dirs::home_dir().ok_or_else(|| "Could not find home directory".to_string())?;
+    
+    let mut browsers = Vec::new();
+    
+    // Chrome detection
+    #[cfg(target_os = "windows")]
+    let chrome_path = home_dir.join("AppData/Local/Google/Chrome/User Data/Default");
+    #[cfg(target_os = "macos")]
+    let chrome_path = home_dir.join("Library/Application Support/Google/Chrome/Default");
+    #[cfg(target_os = "linux")]
+    let chrome_path = home_dir.join(".config/google-chrome/Default");
+    
+    browsers.push(DetectedBrowser {
+        id: "chrome".to_string(),
+        name: "Google Chrome".to_string(),
+        available: chrome_path.exists(),
+    });
+    
+    // Edge detection
+    #[cfg(target_os = "windows")]
+    let edge_path = home_dir.join("AppData/Local/Microsoft/Edge/User Data/Default");
+    #[cfg(target_os = "macos")]
+    let edge_path = home_dir.join("Library/Application Support/Microsoft Edge/Default");
+    #[cfg(target_os = "linux")]
+    let edge_path = home_dir.join(".config/microsoft-edge/Default");
+    
+    browsers.push(DetectedBrowser {
+        id: "edge".to_string(),
+        name: "Microsoft Edge".to_string(),
+        available: edge_path.exists(),
+    });
+    
+    // Firefox detection
+    #[cfg(target_os = "windows")]
+    let firefox_path = home_dir.join("AppData/Local/Mozilla/Firefox/Profiles");
+    #[cfg(target_os = "macos")]
+    let firefox_path = home_dir.join("Library/Application Support/Firefox/Profiles");
+    #[cfg(target_os = "linux")]
+    let firefox_path = home_dir.join(".mozilla/firefox");
+    
+    let firefox_available = if firefox_path.exists() {
+        // Check if there's at least one profile with places.sqlite
+        if let Ok(mut entries) = tokio::fs::read_dir(&firefox_path).await {
+            let mut found = false;
+            while let Ok(Some(entry)) = entries.next_entry().await {
+                let path = entry.path();
+                if path.is_dir() && path.join("places.sqlite").exists() {
+                    found = true;
+                    break;
+                }
+            }
+            found
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+    
+    browsers.push(DetectedBrowser {
+        id: "firefox".to_string(),
+        name: "Mozilla Firefox".to_string(),
+        available: firefox_available,
+    });
+    
+    // Zen Browser detection
+    #[cfg(target_os = "windows")]
+    let zen_path = home_dir.join("AppData/Local/Zen Browser/Profiles");
+    #[cfg(target_os = "macos")]
+    let zen_path = home_dir.join("Library/Application Support/Zen Browser/Profiles");
+    #[cfg(target_os = "linux")]
+    let zen_path = home_dir.join(".config/zen-browser");
+    
+    let zen_available = if zen_path.exists() {
+        if let Ok(mut entries) = tokio::fs::read_dir(&zen_path).await {
+            let mut found = false;
+            while let Ok(Some(entry)) = entries.next_entry().await {
+                let path = entry.path();
+                if path.is_dir() && path.join("places.sqlite").exists() {
+                    found = true;
+                    break;
+                }
+            }
+            found
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+    
+    browsers.push(DetectedBrowser {
+        id: "zen".to_string(),
+        name: "Zen Browser".to_string(),
+        available: zen_available,
+    });
+    
+    Ok(browsers)
+}
+
 pub async fn import_from_browser(browser: &str) -> Result<Option<ImportResult>, String> {
     match browser {
         "chrome" | "edge" => import_chrome_based_browser(browser).await,

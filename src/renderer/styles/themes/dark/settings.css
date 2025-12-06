@@ -220,11 +220,11 @@
 
 /* About browser section */
 .app[data-theme="dark"] .about-browser {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
 }
 
 .app[data-theme="dark"] .about-logo {
-  background: rgba(124, 58, 237, 0.1);
+  background: transparent;
 }
 
 .app[data-theme="dark"] .about-info h3 {

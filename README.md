@@ -211,7 +211,7 @@ Application data is stored in the user's app data directory:
 
 ## License
 
-See LICENSE file for details.
+GPLv3
 
 ## Version
 
