@@ -9,7 +9,7 @@ export const getInternalPageTitle = (url: string): string => {
     case INTERNAL_URLS.history: return 'История';
     case INTERNAL_URLS.downloads: return 'Загрузки';
     case INTERNAL_URLS.settings: return 'Настройки';
-    default: return 'XOLO';
+    default: return 'Axion';
   }
 };
 
@@ -21,7 +21,7 @@ export const normalizeUrl = (input: string, searchEngine: Settings['searchEngine
   if (!s) return '';
 
   // Внутренние URL браузера
-  if (s.startsWith('xolo://')) {
+  if (s.startsWith('axion://')) {
     return s;
   }
 
@@ -43,7 +43,7 @@ export const normalizeUrl = (input: string, searchEngine: Settings['searchEngine
  * Проверка, является ли URL внутренним
  */
 export const isInternalUrl = (url: string): boolean => {
-  return url.startsWith('xolo://');
+  return url.startsWith('axion://');
 };
 
 /**

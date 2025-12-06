@@ -10,16 +10,36 @@ interface UseBookmarksOptions {
 export const useBookmarks = ({ workspaces, activeWorkspaceId }: UseBookmarksOptions) => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
 
-  const addBookmark = useCallback(() => {
+  const addBookmark = useCallback(async () => {
     const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
     const tab = activeWorkspace?.tabs.find(t => t.id === activeWorkspace.activeTabId);
-    if (!tab || !tab.url) return;
+    if (!tab) return;
+    
+    // Получаем реальную информацию о странице из WebView менеджера
+    // Это гарантирует актуальный URL даже после SPA-навигации
+    let url = tab.url;
+    let title = tab.title;
+    let favicon = tab.favicon;
+    
+    try {
+      const realInfo = await window.electronAPI.getRealPageInfo(tab.id);
+      if (realInfo && realInfo.url && realInfo.url !== 'about:blank') {
+        url = realInfo.url;
+        title = realInfo.title || title;
+        favicon = realInfo.favicon || favicon;
+      }
+    } catch (e) {
+      // Fallback на данные из tab если не удалось получить из WebView
+      console.warn('Failed to get real page info, using tab data:', e);
+    }
+    
+    if (!url) return;
     
     const bookmark: Bookmark = { 
       id: uuidv4(), 
-      url: tab.url, 
-      title: tab.title, 
-      favicon: tab.favicon, 
+      url, 
+      title, 
+      favicon, 
       createdAt: Date.now() 
     };
     const newBookmarks = [...bookmarks, bookmark];
@@ -28,7 +48,7 @@ export const useBookmarks = ({ workspaces, activeWorkspaceId }: UseBookmarksOpti
   }, [workspaces, activeWorkspaceId, bookmarks]);
 
   const handleImportFromBrowser = useCallback(async (
-    browser: 'chrome' | 'firefox' | 'edge',
+    browser: 'chrome' | 'firefox' | 'edge' | 'zen',
     history: HistoryEntry[],
     setHistory: React.Dispatch<React.SetStateAction<HistoryEntry[]>>,
     setShowImportDialog: React.Dispatch<React.SetStateAction<boolean>>
@@ -46,8 +66,11 @@ export const useBookmarks = ({ workspaces, activeWorkspaceId }: UseBookmarksOpti
       // Объединяем историю
       const mergedHistory = [...result.history, ...history];
       setHistory(mergedHistory.slice(0, 500));
+      window.electronAPI.setHistory?.(mergedHistory.slice(0, 500));
       
-      alert(`Импортировано: ${result.bookmarks.length} закладок`);
+      alert(`Импортировано: ${result.bookmarks.length} закладок и ${result.history.length} записей истории`);
+    } else {
+      alert('Не удалось найти данные браузера. Убедитесь, что браузер установлен.');
     }
   }, [bookmarks]);
 

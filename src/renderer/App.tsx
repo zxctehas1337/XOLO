@@ -1,19 +1,12 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { Settings, defaultSettings } from './types';
 import { useTranslation } from './hooks/useTranslation';
-import TitleBar from './components/TitleBar';
-import AddressBar from './components/AddressBar';
-import WebView2Container from './components/WebView2Container';
-import StartPage from './components/StartPage';
+import TitleBar from './components/TitleBar/TitleBar';
+import AddressBar from './components/AddressBar/AddressBar';
 import ZenSidebar from './components/ZenSidebar';
-import NewTabModal from './components/NewTabModal';
-import ImportDialog from './components/ImportDialog';
-import TabSearch from './components/TabSearch';
-import HistoryPage from './components/HistoryPage';
-import DownloadsPage from './components/DownloadsPage';
-import SettingsPage from './components/SettingsPage';
-import { Toast } from './components/Toast';
-import { INTERNAL_URLS } from './constants';
+import WebViewArea from './components/WebView/WebViewArea';
+import AppModals from './components/AppModals';
+import UpdateBanner from './components/UpdateBanner';
 import { extractSearchQueries } from './utils/url';
 import {
   useWorkspaces,
@@ -25,11 +18,12 @@ import {
   useShortcuts,
   useSession,
   useWebViewVisibility,
+  useStartPageData,
+  useTabThumbnails,
 } from './hooks';
 import './styles/App.css';
 
 const App: React.FC = () => {
-  console.log('App component rendering...');
   
   // Базовые состояния
   const [settings, setSettings] = useState<Settings>(defaultSettings);
@@ -45,14 +39,13 @@ const App: React.FC = () => {
   const t = useTranslation(settings.language);
   
   // Состояния для StartPage сайтов
-  const [hiddenSites, setHiddenSites] = useState<string[]>(() => {
-    const saved = localStorage.getItem('hiddenSites');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [renamedSites, setRenamedSites] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('renamedSites');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const {
+    hiddenSites,
+    renamedSites,
+    handleHideSite,
+    handleDeleteSite,
+    handleRenameSite
+  } = useStartPageData();
   
   const webviewRefs = useRef<Map<string, HTMLWebViewElement>>(new Map());
 
@@ -72,6 +65,7 @@ const App: React.FC = () => {
     deleteWorkspace,
     renameWorkspace,
     updateWorkspaceIcon,
+    updateWorkspaceColor,
     createNewTab,
     closeTab,
     restoreClosedTab,
@@ -87,7 +81,6 @@ const App: React.FC = () => {
     goForward,
     reloadTab,
     stopLoading,
-    goHome,
     openInternalPage,
   } = useNavigation({
     settings,
@@ -135,7 +128,7 @@ const App: React.FC = () => {
   }, []);
 
   const openDevTools = useCallback(() => {
-    console.log('DevTools: Press F12 to open DevTools for the entire window');
+    // DevTools: Press F12 to open DevTools for the entire window
   }, []);
 
   const printPage = useCallback(() => {
@@ -165,46 +158,12 @@ const App: React.FC = () => {
     localStorage.setItem('sidebarWidth', width.toString());
   }, []);
 
-  // Функции для управления сайтами на StartPage
-  const handleHideSite = useCallback((url: string) => {
-    setHiddenSites(prev => {
-      const updated = [...prev, url];
-      localStorage.setItem('hiddenSites', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
-
-  const handleDeleteSite = useCallback((url: string) => {
-    // Удаление = скрытие + удаление из истории
-    setHiddenSites(prev => {
-      const updated = [...prev, url];
-      localStorage.setItem('hiddenSites', JSON.stringify(updated));
-      return updated;
-    });
-    // Также удаляем переименование если было
-    setRenamedSites(prev => {
-      const updated = { ...prev };
-      delete updated[url];
-      localStorage.setItem('renamedSites', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
-
-  const handleRenameSite = useCallback((url: string, newName: string) => {
-    setRenamedSites(prev => {
-      const updated = { ...prev, [url]: newName };
-      localStorage.setItem('renamedSites', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
-
   // Шорткаты
   useShortcuts({
     createNewTab,
     closeTab,
     activeTabIdRef,
     reloadTab,
-    goHome,
     zoomIn,
     zoomOut,
     zoomReset,
@@ -228,6 +187,15 @@ const App: React.FC = () => {
     workspacesRef,
     activeWorkspaceId,
     isModalOpen,
+  });
+
+  // Захват скриншотов для превью вкладок
+  useTabThumbnails({
+    workspaces,
+    activeWorkspaceId,
+    activeTabId,
+    updateTab,
+    captureInterval: 5000, // Обновление каждые 5 секунд
   });
 
   // Вычисляемые значения
@@ -255,14 +223,10 @@ const App: React.FC = () => {
       data-sidebar-position={settings.sidebarPosition}
       data-theme={settings.theme}
     >
-      {updateAvailable && !updateDownloaded && <div className="update-banner" />}
-      
-      {updateDownloaded && (
-        <div 
-          className="update-banner update-ready" 
-          onClick={() => window.electronAPI.installUpdate()} 
-        />
-      )}
+      <UpdateBanner 
+        updateAvailable={updateAvailable} 
+        updateDownloaded={updateDownloaded} 
+      />
       
       {!isFullscreen && <TitleBar />}
       
@@ -284,93 +248,32 @@ const App: React.FC = () => {
               onReload={reloadTab}
               onStop={stopLoading}
               onBookmark={addBookmark}
-              onHome={goHome}
             />
           )}
           
           <div className="content-area">
-            <div className="webview-area">
-              {/* WebView для всех воркспейсов */}
-              {workspaces.map(workspace =>
-                workspace.tabs.map(tab => {
-                  const isCurrentWorkspace = workspace.id === activeWorkspaceId;
-                  const isActiveTab = isCurrentWorkspace && tab.id === activeTabId;
-                  const shouldRender = tab.url && !tab.url.startsWith('xolo://');
-
-                  return (
-                    <div
-                      key={tab.id}
-                      className={`webview-wrapper ${isActiveTab && shouldRender ? 'active' : 'hidden'}`}
-                      style={{ display: isActiveTab && shouldRender ? 'flex' : 'none' }}
-                    >
-                      {shouldRender && (
-                        <WebView2Container
-                          tab={tab}
-                          isActive={isActiveTab}
-                          onUpdate={(updates) => updateTab(tab.id, updates)}
-                          onAddHistory={addToHistory}
-                          webviewRef={(ref) => {
-                            if (ref) webviewRefs.current.set(tab.id, ref as any);
-                          }}
-                          onOpenInNewTab={createNewTab}
-                        />
-                      )}
-                    </div>
-                  );
-                })
-              )}
-              
-              {/* Внутренние страницы и стартовая */}
-              {tabs.map(tab => {
-                const isActiveTab = tab.id === activeTabId;
-                const hasWebView = tab.url && !tab.url.startsWith('xolo://');
-                const shouldShowContent = isActiveTab && !hasWebView;
-
-                return (
-                  <div
-                    key={`content-${tab.id}`}
-                    className={`webview-wrapper ${shouldShowContent ? 'active' : 'hidden'}`}
-                    style={{ display: shouldShowContent ? 'flex' : 'none' }}
-                  >
-                    {shouldShowContent && (
-                      tab.isFrozen ? (
-                        <div className="frozen-tab-placeholder">
-                          <div className="frozen-icon">❄️</div>
-                          <p>{t.common.frozenForMemory}</p>
-                          <button onClick={() => unfreezeTab(tab.id)}>{t.common.unfreeze}</button>
-                        </div>
-                      ) : tab.url === INTERNAL_URLS.history ? (
-                        <HistoryPage
-                          history={history}
-                          onNavigate={navigate}
-                          onClearHistory={clearHistory}
-                          language={settings.language}
-                        />
-                      ) : tab.url === INTERNAL_URLS.downloads ? (
-                        <DownloadsPage language={settings.language} />
-                      ) : tab.url === INTERNAL_URLS.settings ? (
-                        <SettingsPage settings={settings} onUpdate={updateSettings} />
-                      ) : !tab.url ? (
-                        <StartPage
-                          settings={settings}
-                          onNavigate={navigate}
-                          recentSites={history.slice(0, 8).map(h => ({
-                            url: h.url,
-                            title: h.title,
-                            favicon: h.favicon,
-                          }))}
-                          hiddenSites={hiddenSites}
-                          renamedSites={renamedSites}
-                          onHideSite={handleHideSite}
-                          onDeleteSite={handleDeleteSite}
-                          onRenameSite={handleRenameSite}
-                        />
-                      ) : null
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <WebViewArea
+              workspaces={workspaces}
+              activeWorkspaceId={activeWorkspaceId}
+              activeTabId={activeTabId}
+              tabs={tabs}
+              settings={settings}
+              history={history}
+              updateTab={updateTab}
+              addToHistory={addToHistory}
+              webviewRefs={webviewRefs}
+              createNewTab={createNewTab}
+              unfreezeTab={unfreezeTab}
+              navigate={navigate}
+              clearHistory={clearHistory}
+              updateSettings={updateSettings}
+              hiddenSites={hiddenSites}
+              renamedSites={renamedSites}
+              onHideSite={handleHideSite}
+              onDeleteSite={handleDeleteSite}
+              onRenameSite={handleRenameSite}
+              t={t}
+            />
           </div>
         </div>
         
@@ -382,6 +285,7 @@ const App: React.FC = () => {
           onWorkspaceDelete={deleteWorkspace}
           onWorkspaceRename={renameWorkspace}
           onWorkspaceIconChange={updateWorkspaceIcon}
+          onWorkspaceColorChange={updateWorkspaceColor}
           tabs={tabs}
           activeTabId={activeTabId}
           onTabSelect={setActiveTabInWorkspace}
@@ -408,45 +312,30 @@ const App: React.FC = () => {
           showNavigation={settings.showSidebarNavigation}
           tabCloseButton={settings.tabCloseButton}
           showTabFavicons={settings.showTabFavicons}
+          showTabPreviews={settings.showTabPreviews}
           language={settings.language}
         />
       </div>
 
-      {/* Модальные окна */}
-      {showNewTabModal && (
-        <NewTabModal
-          recentQueries={recentSearches}
-          onSubmit={(q) => {
-            createNewTab(q);
-            setShowNewTabModal(false);
-          }}
-          onClose={() => setShowNewTabModal(false)}
-        />
-      )}
-      
-      {showImportDialog && (
-        <ImportDialog
-          onClose={() => setShowImportDialog(false)}
-          onImport={(browser) => handleImportFromBrowser(browser, history, setHistory, setShowImportDialog)}
-        />
-      )}
-      
-      {showTabSearch && (
-        <TabSearch
-          workspaces={workspaces}
-          activeWorkspaceId={activeWorkspaceId}
-          onSelectTab={selectTabFromSearch}
-          onClose={() => setShowTabSearch(false)}
-        />
-      )}
-      
-      {toastMessage && (
-        <Toast
-          message={toastMessage}
-          type="info"
-          onClose={() => setToastMessage(null)}
-        />
-      )}
+      <AppModals
+        showNewTabModal={showNewTabModal}
+        setShowNewTabModal={setShowNewTabModal}
+        showImportDialog={showImportDialog}
+        setShowImportDialog={setShowImportDialog}
+        showTabSearch={showTabSearch}
+        setShowTabSearch={setShowTabSearch}
+        toastMessage={toastMessage}
+        setToastMessage={setToastMessage}
+        recentSearches={recentSearches}
+        workspaces={workspaces}
+        activeWorkspaceId={activeWorkspaceId}
+        createNewTab={createNewTab}
+        handleImportFromBrowser={handleImportFromBrowser}
+        history={history}
+        setHistory={setHistory}
+        selectTabFromSearch={selectTabFromSearch}
+      />
+
     </div>
   );
 };

@@ -12,6 +12,8 @@ export interface Tab {
   isSecure?: boolean;
   isFrozen?: boolean; // Вкладка заморожена для экономии памяти
   lastActiveAt?: number; // Время последней активности
+  thumbnail?: string; // Base64 скриншот страницы для превью
+  thumbnailUpdatedAt?: number; // Время последнего обновления скриншота
 }
 
 export type Language = 'ru' | 'en';
@@ -48,7 +50,7 @@ export interface HistoryEntry {
 
 export interface Settings {
   // Поиск
-  searchEngine: 'google' | 'duckduckgo' | 'bing' | 'yandex';
+  searchEngine: 'google' | 'duckduckgo' | 'bing';
   
   // Внешний вид
   theme: 'dark' | 'light' | 'custom';
@@ -138,7 +140,7 @@ export const defaultSettings: Settings = {
   // Вкладки
   tabPosition: 'top',
   tabStyle: 'default',
-  showTabPreviews: false,
+  showTabPreviews: true,
   showTabFavicons: true,
   tabCloseButton: 'hover',
   
@@ -246,7 +248,8 @@ declare global {
       closeWebView: (id: string) => Promise<void>;
       setWebViewVisible: (id: string, visible: boolean) => Promise<void>;
       updateWebViewBounds: (id: string, bounds: { x: number; y: number; width: number; height: number }) => Promise<void>;
-      onWebViewUrlChanged: (callback: (data: { id: string; url?: string; title?: string; is_loading?: boolean }) => void) => () => void;
+      getRealPageInfo: (id: string) => Promise<{ id: string; url: string; title: string; favicon?: string; is_loading: boolean }>;
+      onWebViewUrlChanged: (callback: (data: { id: string; url?: string; title?: string; favicon?: string; is_loading?: boolean }) => void) => () => void;
       onPageInfoUpdate: (callback: (data: { id: string; title: string; url: string }) => void) => () => void;
     };
     electron?: {

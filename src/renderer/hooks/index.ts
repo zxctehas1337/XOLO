@@ -9,3 +9,5 @@ export { useSession } from './useSession';
 export { useWebViewVisibility } from './useWebViewVisibility';
 export { useWallpaper } from './useWallpaper';
 export { useTranslation } from './useTranslation';
+export { useStartPageData } from './useStartPageData';
+export { useTabThumbnails } from './useTabThumbnails';

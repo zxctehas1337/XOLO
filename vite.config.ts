@@ -7,6 +7,14 @@ export default defineConfig({
   root: 'src/renderer',
   publicDir: path.resolve(__dirname, 'public'),
   clearScreen: false,
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@renderer': path.resolve(__dirname, './src/renderer'),
+      '@components': path.resolve(__dirname, './src/renderer/components'),
+      '@styles': path.resolve(__dirname, './src/renderer/styles'),
+    },
+  },
   server: {
     port: 1420,
     strictPort: true,

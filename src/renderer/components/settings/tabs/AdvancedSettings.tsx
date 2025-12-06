@@ -21,6 +21,9 @@ export const AdvancedSettings: React.FC<SettingsTabProps> = ({ settings, onUpdat
           options={[
             { value: 'ru', label: 'Русский' },
             { value: 'en', label: 'English' },
+            { value: 'es', label: 'Español' },
+            { value: 'fr', label: 'Français' },
+            { value: 'de', label: 'Deutsch' },
           ]}
           onChange={(v) => onUpdate({ language: v as typeof settings.language })}
         />
@@ -42,10 +45,10 @@ export const AdvancedSettings: React.FC<SettingsTabProps> = ({ settings, onUpdat
       <h2>{t.settings.aboutBrowser}</h2>
       <div className="about-browser">
         <div className="about-logo">
-          <img src={browserIcon} alt="Xolo Browser" width="48" height="48" />
+          <img src={browserIcon} alt="Axion Browser" width="48" height="48" />
         </div>
         <div className="about-info">
-          <h3>Xolo Browser</h3>
+          <h3>Axion Browser</h3>
           <p>{t.settings.version} 1.0.0</p>
           <p className="about-copyright">{t.settings.copyright}</p>
         </div>

@@ -1,7 +1,7 @@
 {
-  "productName": "XOLO Browser",
+  "productName": "Axion",
   "version": "1.0.0",
-  "identifier": "com.xolo.browser",
+  "identifier": "com.axion.browser",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
     "beforeBuildCommand": "npm run build:renderer",
@@ -14,7 +14,7 @@
         "fullscreen": false,
         "height": 900,
         "resizable": true,
-        "title": "XOLO Browser",
+        "title": "Axion Browser",
         "width": 1400,
         "minWidth": 800,
         "minHeight": 600,
@@ -32,7 +32,7 @@
   "bundle": {
     "active": true,
     "category": "Utility",
-    "copyright": "© 2025 XOLO Team",
+    "copyright": "© 2025 Axion Team",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

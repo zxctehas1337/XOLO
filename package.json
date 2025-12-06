@@ -1,7 +1,7 @@
 {
-  "name": "xolo-browser",
-  "version": "1.0.0",
-  "description": "Modern web browser built with Tauri and WebView2 for Windows",
+  "name": "Axion",
+  "version": "1.7.9",
+  "description": "",
   "scripts": {
     "dev": "tauri dev",
     "dev:renderer": "vite",

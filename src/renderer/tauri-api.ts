@@ -23,6 +23,7 @@ export const electronAPI = {
   getHistory: () => invoke('get_history'),
   addHistory: (entry: any) => invoke('add_history', { entry }),
   clearHistory: () => invoke('clear_history'),
+  setHistory: (history: any[]) => invoke('set_history', { history }),
 
   // External
   openExternal: (url: string) => shellOpen(url),
@@ -64,19 +65,43 @@ export const electronAPI = {
 
   // Downloads
   getDownloads: () => invoke('get_downloads'),
+  startDownload: (url: string, filename?: string) => invoke('start_download', { url, filename }),
+  cancelDownload: (id: string) => invoke('cancel_download', { id }),
+  pauseDownload: (id: string) => invoke('pause_download', { id }),
+  resumeDownload: (id: string) => invoke('resume_download', { id }),
+  openDownload: (path: string) => invoke('open_download', { path }),
+  showDownloadInFolder: (path: string) => invoke('show_download_in_folder', { path }),
+  clearCompletedDownloads: () => invoke('clear_completed_downloads'),
+  getDownloadsFolder: () => invoke<string>('get_downloads_folder'),
+  
+  // Download events
+  onDownloadStarted: (callback: (download: any) => void) => {
+    const unlisten = listen('download-started', (event: any) => {
+      callback(event.payload);
+    });
+    return () => { unlisten.then(fn => fn()); };
+  },
   onDownloadUpdate: (callback: (download: any) => void) => {
     const unlisten = listen('download-update', (event: any) => {
       callback(event.payload);
     });
     return () => { unlisten.then(fn => fn()); };
   },
-  cancelDownload: (id: string) => invoke('cancel_download', { id }),
-  openDownload: (path: string) => invoke('open_download', { path }),
-  showDownloadInFolder: (path: string) => invoke('show_download_in_folder', { path }),
-  clearCompletedDownloads: () => invoke('clear_completed_downloads'),
+  onDownloadProgress: (callback: (data: { id: string; receivedBytes: number; totalBytes: number; speed: number }) => void) => {
+    const unlisten = listen('download-progress', (event: any) => {
+      callback(event.payload);
+    });
+    return () => { unlisten.then(fn => fn()); };
+  },
+  onDownloadCompleted: (callback: (download: any) => void) => {
+    const unlisten = listen('download-completed', (event: any) => {
+      callback(event.payload);
+    });
+    return () => { unlisten.then(fn => fn()); };
+  },
 
   // Browser import
-  importFromBrowser: (browser: 'chrome' | 'firefox' | 'edge') => 
+  importFromBrowser: (browser: 'chrome' | 'firefox' | 'edge' | 'zen') => 
     invoke('import_from_browser', { browser }),
 
   // Auto-update
@@ -114,12 +139,14 @@ export const electronAPI = {
   getWebViewUrl: (id: string) => invoke('get_webview_url', { id }),
   getWebViewTitle: (id: string) => invoke<string>('get_webview_title', { id }),
   webViewExists: (id: string) => invoke<boolean>('webview_exists', { id }),
+  // Получить реальную информацию о странице (URL, title, favicon) из менеджера
+  getRealPageInfo: (id: string) => invoke<{ id: string; url: string; title: string; favicon?: string; is_loading: boolean }>('get_real_page_info', { id }),
   setWebViewVisible: (id: string, visible: boolean) => invoke('set_webview_visible', { id, visible }),
   updateWebViewBounds: (id: string, bounds: { x: number; y: number; width: number; height: number }) => 
     invoke('update_webview_bounds', { id, bounds }),
 
   // WebView URL change listener
-  onWebViewUrlChanged: (callback: (data: { id: string; url?: string; title?: string; is_loading?: boolean }) => void) => {
+  onWebViewUrlChanged: (callback: (data: { id: string; url?: string; title?: string; favicon?: string; is_loading?: boolean }) => void) => {
     const unlisten = listen('webview-url-changed', (event: any) => {
       callback(event.payload);
     });

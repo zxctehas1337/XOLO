@@ -8,6 +8,7 @@ export interface ZenSidebarProps {
   onWorkspaceDelete: (id: string) => void;
   onWorkspaceRename?: (id: string, name: string) => void;
   onWorkspaceIconChange?: (id: string, icon: string) => void;
+  onWorkspaceColorChange?: (id: string, color: string | undefined) => void;
 
   tabs: Tab[];
   activeTabId: string;
@@ -43,6 +44,7 @@ export interface ZenSidebarProps {
   showNavigation?: boolean;
   tabCloseButton?: 'hover' | 'always' | 'never';
   showTabFavicons?: boolean;
+  showTabPreviews?: boolean;
   
   // Localization
   language: Language;

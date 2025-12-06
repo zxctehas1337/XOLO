@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Tab, Workspace, Settings, Language } from '../types';
 import { normalizeUrl } from '../utils/url';
-import { removeWebViewFromCache } from '../components/WebView2Container';
+import { removeWebViewFromCache } from '../components/WebView/WebView2Container';
 import { useTranslation } from './useTranslation';
 
 interface UseWorkspacesOptions {
@@ -105,6 +105,12 @@ export const useWorkspaces = ({ settings, language }: UseWorkspacesOptions) => {
     ));
   }, []);
 
+  const updateWorkspaceColor = useCallback((workspaceId: string, color: string | undefined) => {
+    setWorkspaces(prev => prev.map(ws => 
+      ws.id === workspaceId ? { ...ws, color } : ws
+    ));
+  }, []);
+
   const createNewTab = useCallback((urlOrQuery?: string) => {
     const finalUrl = urlOrQuery ? normalizeUrl(urlOrQuery, settings.searchEngine) : '';
 
@@ -192,9 +198,9 @@ export const useWorkspaces = ({ settings, language }: UseWorkspacesOptions) => {
   const updateTab = useCallback((tabId: string, updates: Partial<Tab>) => {
     setWorkspaces(prev => prev.map(ws => ({
       ...ws, 
-      tabs: ws.tabs.map(t => {
-        if (t.id === tabId) {
-          const updatedTab = { ...t, ...updates };
+      tabs: ws.tabs.map(tab => {
+        if (tab.id === tabId) {
+          const updatedTab = { ...tab, ...updates };
           // Update title based on URL change
           if ('url' in updates) {
             updatedTab.title = updatedTab.url ? 
@@ -203,7 +209,7 @@ export const useWorkspaces = ({ settings, language }: UseWorkspacesOptions) => {
           }
           return updatedTab;
         }
-        return t;
+        return tab;
       }),
     })));
   }, [t]);
@@ -216,7 +222,7 @@ export const useWorkspaces = ({ settings, language }: UseWorkspacesOptions) => {
         ? { 
             ...ws, 
             activeTabId: tabId,
-            tabs: ws.tabs.map(t => t.id === tabId ? { ...t, lastActiveAt: Date.now() } : t)
+            tabs: ws.tabs.map(tab => tab.id === tabId ? { ...tab, lastActiveAt: Date.now() } : tab)
           } 
         : ws
     ));
@@ -232,7 +238,7 @@ export const useWorkspaces = ({ settings, language }: UseWorkspacesOptions) => {
         ? { 
             ...ws, 
             activeTabId: tabId,
-            tabs: ws.tabs.map(t => t.id === tabId ? { ...t, lastActiveAt: Date.now() } : t)
+            tabs: ws.tabs.map(tab => tab.id === tabId ? { ...tab, lastActiveAt: Date.now() } : tab)
           } 
         : ws
     ));
@@ -259,6 +265,7 @@ export const useWorkspaces = ({ settings, language }: UseWorkspacesOptions) => {
     deleteWorkspace,
     renameWorkspace,
     updateWorkspaceIcon,
+    updateWorkspaceColor,
     createNewTab,
     closeTab,
     restoreClosedTab,

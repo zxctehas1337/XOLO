@@ -21,6 +21,7 @@ impl WebViewManager {
             id,
             url,
             title: String::new(),
+            favicon: String::new(),
             is_loading: true,
             can_go_back: false,
             can_go_forward: false,
@@ -48,6 +49,13 @@ impl WebViewManager {
     pub fn update_title(&mut self, id: &str, title: String) {
         if let Some(info) = self.webviews.get_mut(id) {
             info.title = title;
+        }
+    }
+
+    /// Обновить favicon
+    pub fn update_favicon(&mut self, id: &str, favicon: String) {
+        if let Some(info) = self.webviews.get_mut(id) {
+            info.favicon = favicon;
         }
     }
 

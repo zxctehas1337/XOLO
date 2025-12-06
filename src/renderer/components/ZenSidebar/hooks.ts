@@ -1,6 +1,98 @@
 import { useState, useRef, useEffect, useCallback, RefObject } from 'react';
-import { ContextMenuPosition } from './types';
-import { MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH } from './constants';
+import { ContextMenuPosition, QuickSite } from './types';
+import { MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH, DEFAULT_QUICK_SITES } from './constants';
+
+const QUICK_SITES_STORAGE_KEY = 'axion-quick-sites';
+const QUICK_SITES_CHANGE_EVENT = 'quick-sites-changed';
+
+/**
+ * Hook for managing QuickSites with localStorage persistence
+ */
+export function useQuickSites() {
+  const [sites, setSites] = useState<QuickSite[]>(() => {
+    try {
+      const stored = localStorage.getItem(QUICK_SITES_STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error('Failed to load quick sites:', e);
+    }
+    return DEFAULT_QUICK_SITES;
+  });
+
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Persist to localStorage and dispatch custom event
+  const saveSites = useCallback((newSites: QuickSite[]) => {
+    try {
+      localStorage.setItem(QUICK_SITES_STORAGE_KEY, JSON.stringify(newSites));
+      setSites(newSites);
+      // Dispatch custom event for same-window sync
+      window.dispatchEvent(new CustomEvent(QUICK_SITES_CHANGE_EVENT, { detail: newSites }));
+    } catch (e) {
+      console.error('Failed to save quick sites:', e);
+    }
+  }, []);
+
+  // Listen for changes from other components (same window)
+  useEffect(() => {
+    const handleQuickSitesChange = (e: CustomEvent<QuickSite[]>) => {
+      setSites(e.detail);
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === QUICK_SITES_STORAGE_KEY && e.newValue) {
+        try {
+          setSites(JSON.parse(e.newValue));
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    window.addEventListener(QUICK_SITES_CHANGE_EVENT, handleQuickSitesChange as EventListener);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener(QUICK_SITES_CHANGE_EVENT, handleQuickSitesChange as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const addSite = useCallback((site: QuickSite) => {
+    const newSites = [...sites, site];
+    saveSites(newSites);
+  }, [sites, saveSites]);
+
+  const removeSite = useCallback((index: number) => {
+    const newSites = sites.filter((_, i) => i !== index);
+    saveSites(newSites);
+  }, [sites, saveSites]);
+
+  const updateSite = useCallback((index: number, site: QuickSite) => {
+    const newSites = sites.map((s, i) => i === index ? site : s);
+    saveSites(newSites);
+  }, [sites, saveSites]);
+
+  const resetToDefaults = useCallback(() => {
+    saveSites(DEFAULT_QUICK_SITES);
+  }, [saveSites]);
+
+  const toggleEditMode = useCallback(() => {
+    setIsEditMode(prev => !prev);
+  }, []);
+
+  return {
+    sites,
+    isEditMode,
+    addSite,
+    removeSite,
+    updateSite,
+    resetToDefaults,
+    toggleEditMode,
+  };
+}
 
 /**
  * Hook for managing workspace editing state

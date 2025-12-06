@@ -29,11 +29,22 @@ export const useNavigation = ({
 
   const navigate = useCallback((url: string) => {
     const currentActiveId = activeTabIdRef.current;
+    if (!currentActiveId) return;
+    
     let finalUrl = url.trim();
-    if (!finalUrl || !currentActiveId) return;
+
+    // Если URL пустой, переходим на StartPage
+    if (!finalUrl) {
+      updateTab(currentActiveId, { 
+        url: '', 
+        isLoading: false, 
+        title: 'Новая вкладка' 
+      });
+      return;
+    }
 
     // Проверяем внутренние URL браузера
-    if (finalUrl.startsWith('xolo://')) {
+    if (finalUrl.startsWith('axion://')) {
       updateTab(currentActiveId, { 
         url: finalUrl, 
         isLoading: false, 
@@ -102,26 +113,6 @@ export const useNavigation = ({
     }
   }, [updateTab]);
   
-  const goHome = useCallback(async () => {
-    const tabId = activeTabIdRef.current;
-    if (!tabId) return;
-    
-    // Скрываем нативный WebView перед переходом на StartPage
-    try {
-      await window.electronAPI.setWebViewVisible?.(tabId, false);
-    } catch (e) {
-      // WebView может не существовать
-    }
-    
-    updateTab(tabId, { 
-      url: '', 
-      title: 'Новая вкладка',
-      isLoading: false,
-      canGoBack: false,
-      canGoForward: false
-    });
-  }, [updateTab]);
-
   // Открытие внутренних страниц с toggle функциональностью
   const openInternalPage = useCallback((page: 'history' | 'downloads' | 'settings') => {
     const url = INTERNAL_URLS[page];
@@ -181,7 +172,6 @@ export const useNavigation = ({
     goForward,
     reloadTab,
     stopLoading,
-    goHome,
     openInternalPage,
   };
 };

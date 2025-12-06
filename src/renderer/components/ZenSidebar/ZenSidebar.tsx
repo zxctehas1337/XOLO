@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { ZenSidebarProps } from './types';
 import { DEFAULT_SIDEBAR_WIDTH } from './constants';
 import { useWorkspaceEdit, useContextMenu, useSidebarResize } from './hooks';
@@ -22,6 +22,7 @@ const ZenSidebar: React.FC<ZenSidebarProps> = ({
   onWorkspaceDelete,
   onWorkspaceRename,
   onWorkspaceIconChange,
+  onWorkspaceColorChange,
   tabs,
   activeTabId,
   onTabSelect,
@@ -47,9 +48,16 @@ const ZenSidebar: React.FC<ZenSidebarProps> = ({
   showNavigation = true,
   tabCloseButton = 'hover',
   showTabFavicons = true,
+  showTabPreviews = true,
   language,
 }) => {
   const sidebarRef = useRef<HTMLDivElement>(null);
+  
+  // Get active workspace accent color
+  const activeWorkspaceColor = useMemo(() => {
+    const activeWs = workspaces.find(ws => ws.id === activeWorkspaceId);
+    return activeWs?.color;
+  }, [workspaces, activeWorkspaceId]);
   
   // Custom hooks
   const workspaceEdit = useWorkspaceEdit();
@@ -72,7 +80,10 @@ const ZenSidebar: React.FC<ZenSidebarProps> = ({
     <div 
       ref={sidebarRef}
       className={sidebarClasses}
-      style={{ width: style === 'minimal' ? '60px' : `${sidebarWidth}px` }}
+      style={{ 
+        width: style === 'minimal' ? '60px' : `${sidebarWidth}px`,
+        ...(activeWorkspaceColor && { '--workspace-accent': activeWorkspaceColor } as React.CSSProperties)
+      }}
     >
       <WindowControls />
 
@@ -91,7 +102,9 @@ const ZenSidebar: React.FC<ZenSidebarProps> = ({
       <SearchBar onSearch={onSearch} />
 
       {showQuickSites && style !== 'minimal' && (
-        <QuickSites onSiteClick={handleQuickSiteClick} />
+        <QuickSites 
+          onSiteClick={handleQuickSiteClick} 
+        />
       )}
 
       {showWorkspaces && (
@@ -104,6 +117,7 @@ const ZenSidebar: React.FC<ZenSidebarProps> = ({
           onWorkspaceDelete={onWorkspaceDelete}
           onWorkspaceRename={onWorkspaceRename}
           onWorkspaceIconChange={onWorkspaceIconChange}
+          onWorkspaceColorChange={onWorkspaceColorChange}
           editingWorkspaceId={workspaceEdit.editingWorkspaceId}
           editingName={workspaceEdit.editingName}
           setEditingName={workspaceEdit.setEditingName}
@@ -128,6 +142,8 @@ const ZenSidebar: React.FC<ZenSidebarProps> = ({
         style={style}
         tabCloseButton={tabCloseButton}
         showTabFavicons={showTabFavicons}
+        showTabPreviews={showTabPreviews}
+        sidebarPosition={position}
         onTabSelect={onTabSelect}
         onTabClose={onTabClose}
         onNewTab={onNewTab}

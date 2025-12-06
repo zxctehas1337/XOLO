@@ -100,7 +100,13 @@
 }
 
 .zen-sidebar__workspace.is-active .zen-sidebar__workspace-icon svg {
-  color: var(--accent, #7c3aed);
+  color: var(--workspace-accent, var(--accent, #7c3aed));
+}
+
+/* Workspace with custom color - subtle indicator */
+.zen-sidebar__workspace[style*="--workspace-accent"] .zen-sidebar__workspace-btn {
+  border-left: 3px solid var(--workspace-accent);
+  padding-left: 7px;
 }
 
 .zen-sidebar__workspace-btn:hover .zen-sidebar__workspace-icon svg {

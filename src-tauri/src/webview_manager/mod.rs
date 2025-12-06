@@ -2,9 +2,9 @@
 //! 
 //! Управление нативными WebView для вкладок браузера
 
-mod types;
+pub mod types;
 mod manager;
-mod polling;
+pub mod polling;
 
 // Commands module - public for tauri macro access
 pub mod commands;
@@ -13,8 +13,5 @@ pub mod commands;
 pub use types::WebViewBounds;
 pub use manager::WebViewManager;
 
-// Re-export commands for convenience
-pub use commands::*;
-
 // User-Agent для совместимости с Google и другими сайтами
-pub(crate) const CHROME_USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+pub const CHROME_USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";

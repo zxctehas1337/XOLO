@@ -1,8 +1,9 @@
 // Внутренние URL браузера
 export const INTERNAL_URLS = {
-  history: 'xolo://history',
-  downloads: 'xolo://downloads',
-  settings: 'xolo://settings',
+  history: 'axion://history',
+  downloads: 'axion://downloads',
+  settings: 'axion://settings',
+  quicksites: 'axion://quicksites',
 } as const;
 
 // Константы для управления памятью

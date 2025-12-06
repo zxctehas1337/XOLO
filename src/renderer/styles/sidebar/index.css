@@ -39,6 +39,9 @@
 /* Icon picker */
 @import './_icon-picker.css';
 
+/* Color picker */
+@import './_color-picker.css';
+
 /* Scrollbar styles */
 @import './_scrollbar.css';
 
